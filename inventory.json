@@ -1,0 +1,948 @@
+{
+  "ores": [
+    {
+      "name": "Copper",
+      "value": 1
+    },
+    {
+      "name": "Iron",
+      "value": 2
+    },
+    {
+      "name": "Lead",
+      "value": 4
+    },
+    {
+      "name": "Silica",
+      "value": 8
+    },
+    {
+      "name": "Aluminium",
+      "value": 17
+    },
+    {
+      "name": "Silver",
+      "value": 36
+    },
+    {
+      "name": "Gold",
+      "value": 75
+    },
+    {
+      "name": "Diamond",
+      "value": 160
+    },
+    {
+      "name": "Platinum",
+      "value": 340
+    },
+    {
+      "name": "Titanium",
+      "value": 730
+    },
+    {
+      "name": "Iridium",
+      "value": 1600
+    },
+    {
+      "name": "Palladium",
+      "value": 3500
+    },
+    {
+      "name": "Osmium",
+      "value": 7800
+    },
+    {
+      "name": "Rhodium",
+      "value": 17500
+    },
+    {
+      "name": "Inerton",
+      "value": 40000
+    },
+    {
+      "name": "Quadium",
+      "value": 92000
+    },
+    {
+      "name": "Scrith",
+      "value": 215000
+    },
+    {
+      "name": "Uru",
+      "value": 510000
+    },
+    {
+      "name": "Vibranium",
+      "value": 1250000
+    },
+    {
+      "name": "Aether",
+      "value": 3200000
+    },
+    {
+      "name": "Viterium",
+      "value": 0
+    },
+    {
+      "name": "Xynium",
+      "value": 0
+    },
+    {
+      "name": "Qualoium",
+      "value": 0
+    },
+    {
+      "name": "Luterium",
+      "value": 0
+    },
+    {
+      "name": "Wraith",
+      "value": 0
+    },
+    {
+      "name": "Aqualite",
+      "value": 0
+    }
+  ],
+  "alloys": [
+    {
+      "name": "Copper Bar",
+      "value": 1450,
+      "ingredients": [
+        {
+          "name": "Copper",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "name": "Iron Bar",
+      "value": 3000,
+      "ingredients": [
+        {
+          "name": "Iron",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "name": "Lead Bar",
+      "value": 6100,
+      "ingredients": [
+        {
+          "name": "Lead",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "name": "Silicon Bar",
+      "value": 12500,
+      "ingredients": [
+        {
+          "name": "Silica",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "name": "Aluminium Bar",
+      "value": 27600,
+      "ingredients": [
+        {
+          "name": "Aluminium",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "name": "Silver Bar",
+      "value": 60000,
+      "ingredients": [
+        {
+          "name": "Silver",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "name": "Gold Bar",
+      "value": 120000,
+      "ingredients": [
+        {
+          "name": "Gold",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "name": "Bronze Bar",
+      "value": 234000,
+      "ingredients": [
+        {
+          "name": "Copper Bar",
+          "amount": 10
+        },
+        {
+          "name": "Silver Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Steel Bar",
+      "value": 340000,
+      "ingredients": [
+        {
+          "name": "Iron Bar",
+          "amount": 30
+        },
+        {
+          "name": "Lead Bar",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Platinum Bar",
+      "value": 780000,
+      "ingredients": [
+        {
+          "name": "Platinum",
+          "amount": 1000
+        },
+        {
+          "name": "Gold Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Titanium Bar",
+      "value": 1600000,
+      "ingredients": [
+        {
+          "name": "Titanium",
+          "amount": 1000
+        },
+        {
+          "name": "Copper Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Iridium Bar",
+      "value": 3110000,
+      "ingredients": [
+        {
+          "name": "Iridium",
+          "amount": 1000
+        },
+        {
+          "name": "Steel Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Palladium Bar",
+      "value": 7000000,
+      "ingredients": [
+        {
+          "name": "Palladium",
+          "amount": 1000
+        },
+        {
+          "name": "Platinum Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Osmium Bar",
+      "value": 14500000,
+      "ingredients": [
+        {
+          "name": "Osmium",
+          "amount": 1000
+        },
+        {
+          "name": "Titanium Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Rhodium Bar",
+      "value": 31000000,
+      "ingredients": [
+        {
+          "name": "Rhodium",
+          "amount": 1000
+        },
+        {
+          "name": "Iridium Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Inerton Alloy",
+      "value": 68000000,
+      "ingredients": [
+        {
+          "name": "Inerton",
+          "amount": 1000
+        },
+        {
+          "name": "Palladium Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Quadium Alloy",
+      "value": 152000000,
+      "ingredients": [
+        {
+          "name": "Quadium",
+          "amount": 1000
+        },
+        {
+          "name": "Osmium Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Scrith Alloy",
+      "value": 352000000,
+      "ingredients": [
+        {
+          "name": "Scrith",
+          "amount": 1000
+        },
+        {
+          "name": "Rhodium Bar",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Uru Alloy",
+      "value": 832000000,
+      "ingredients": [
+        {
+          "name": "Uru",
+          "amount": 1000
+        },
+        {
+          "name": "Inerton Alloy",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Vibranium Alloy",
+      "value": 2050000000,
+      "ingredients": [
+        {
+          "name": "Vibranium",
+          "amount": 1000
+        },
+        {
+          "name": "Quadium Alloy",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Aether Alloy",
+      "value": 5120000000,
+      "ingredients": [
+        {
+          "name": "Aether",
+          "amount": 1000
+        },
+        {
+          "name": "Quadium Alloy",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Viterium Alloy",
+      "value": 15500000000,
+      "ingredients": [
+        {
+          "name": "Viterium",
+          "amount": 1000
+        },
+        {
+          "name": "Uru Alloy",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Xynium Alloy",
+      "value": 48000000000,
+      "ingredients": [
+        {
+          "name": "Xynium",
+          "amount": 1500
+        },
+        {
+          "name": "Vibranium Alloy",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Qualoium Alloy",
+      "value": 160000000000,
+      "ingredients": [
+        {
+          "name": "Qualoium",
+          "amount": 1500
+        },
+        {
+          "name": "Aether Alloy",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Luterium Alloy",
+      "value": 600000000000,
+      "ingredients": [
+        {
+          "name": "Luterium",
+          "amount": 1500
+        },
+        {
+          "name": "Viterium Alloy",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Wraith Alloy",
+      "value": 2400000000000,
+      "ingredients": [
+        {
+          "name": "Wraith",
+          "amount": 1500
+        },
+        {
+          "name": "Xynium Alloy",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Aqualite Alloy",
+      "value": 17500000000000,
+      "ingredients": [
+        {
+          "name": "Aqualite",
+          "amount": 1500
+        },
+        {
+          "name": "Qualoium Alloy",
+          "amount": 5
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "name": "Copper Wire",
+      "value": 10000,
+      "ingredients": [
+        {
+          "name": "Copper Bar",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Iron Nail",
+      "value": 20000,
+      "ingredients": [
+        {
+          "name": "Iron Bar",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Battery",
+      "value": 70000,
+      "ingredients": [
+        {
+          "name": "Copper Bar",
+          "amount": 10
+        },
+        {
+          "name": "Copper Wire",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Hammer",
+      "value": 135000,
+      "ingredients": [
+        {
+          "name": "Lead Bar",
+          "amount": 5
+        },
+        {
+          "name": "Iron Nail",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Glass",
+      "value": 220000,
+      "ingredients": [
+        {
+          "name": "Silicon Bar",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Circuit",
+      "value": 620000,
+      "ingredients": [
+        {
+          "name": "Copper Wire",
+          "amount": 10
+        },
+        {
+          "name": "Silicon Bar",
+          "amount": 5
+        },
+        {
+          "name": "Aluminium Bar",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Lens",
+      "value": 1100000,
+      "ingredients": [
+        {
+          "name": "Silver Bar",
+          "amount": 5
+        },
+        {
+          "name": "Glass",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Laser",
+      "value": 3200000,
+      "ingredients": [
+        {
+          "name": "Iron Bar",
+          "amount": 10
+        },
+        {
+          "name": "Gold Bar",
+          "amount": 5
+        },
+        {
+          "name": "Lens",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Basic Computer",
+      "value": 7600000,
+      "ingredients": [
+        {
+          "name": "Silver Bar",
+          "amount": 5
+        },
+        {
+          "name": "Circuit",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Solar Panel",
+      "value": 12500000,
+      "ingredients": [
+        {
+          "name": "Glass",
+          "amount": 10
+        },
+        {
+          "name": "Circuit",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Laser Torch",
+      "value": 31000000,
+      "ingredients": [
+        {
+          "name": "Copper Bar",
+          "amount": 5
+        },
+        {
+          "name": "Lens",
+          "amount": 5
+        },
+        {
+          "name": "Laser",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Advanced Battery",
+      "value": 35000000,
+      "ingredients": [
+        {
+          "name": "Battery",
+          "amount": 30
+        },
+        {
+          "name": "Steel Bar",
+          "amount": 20
+        }
+      ]
+    },
+    {
+      "name": "Thermal Scanner",
+      "value": 71500000,
+      "ingredients": [
+        {
+          "name": "Platinum Bar",
+          "amount": 5
+        },
+        {
+          "name": "Glass",
+          "amount": 5
+        },
+        {
+          "name": "Laser",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Advanced Computer",
+      "value": 180000000,
+      "ingredients": [
+        {
+          "name": "Steel Bar",
+          "amount": 5
+        },
+        {
+          "name": "Basic Computer",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Navigation Module",
+      "value": 1000000000,
+      "ingredients": [
+        {
+          "name": "Laser Torch",
+          "amount": 2
+        },
+        {
+          "name": "Thermal Scanner",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Plasma Torch",
+      "value": 1150000000,
+      "ingredients": [
+        {
+          "name": "Iridium Bar",
+          "amount": 15
+        },
+        {
+          "name": "Laser Torch",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Radio Tower",
+      "value": 1450000000,
+      "ingredients": [
+        {
+          "name": "Aluminium Bar",
+          "amount": 150
+        },
+        {
+          "name": "Platinum Bar",
+          "amount": 100
+        },
+        {
+          "name": "Titanium Bar",
+          "amount": 75
+        }
+      ]
+    },
+    {
+      "name": "Telescope",
+      "value": 2700000000,
+      "ingredients": [
+        {
+          "name": "Lens",
+          "amount": 20
+        },
+        {
+          "name": "Advanced Computer",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Satellite Dish",
+      "value": 3400000000,
+      "ingredients": [
+        {
+          "name": "Steel Bar",
+          "amount": 150
+        },
+        {
+          "name": "Palladium Bar",
+          "amount": 30
+        }
+      ]
+    },
+    {
+      "name": "Motor",
+      "value": 7000000000,
+      "ingredients": [
+        {
+          "name": "Bronze Bar",
+          "amount": 500
+        },
+        {
+          "name": "Hammer",
+          "amount": 200
+        }
+      ]
+    },
+    {
+      "name": "Accumulator",
+      "value": 12000000000,
+      "ingredients": [
+        {
+          "name": "Osmium Bar",
+          "amount": 20
+        },
+        {
+          "name": "Advanced Battery",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Nuclear Capsule",
+      "value": 26000000000,
+      "ingredients": [
+        {
+          "name": "Rhodium Bar",
+          "amount": 5
+        },
+        {
+          "name": "Plasma Torch",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Wind Turbine",
+      "value": 140000000000,
+      "ingredients": [
+        {
+          "name": "Aluminium Bar",
+          "amount": 300
+        },
+        {
+          "name": "Motor",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Space Probe",
+      "value": 1000000000000,
+      "ingredients": [
+        {
+          "name": "Solar Panel",
+          "amount": 20
+        },
+        {
+          "name": "Satellite Dish",
+          "amount": 1
+        },
+        {
+          "name": "Telescope",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Nuclear Reactor",
+      "value": 2000000000000,
+      "ingredients": [
+        {
+          "name": "Iridium Bar",
+          "amount": 300
+        },
+        {
+          "name": "Nuclear Capsule",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Collider",
+      "value": 2000000000000,
+      "ingredients": [
+        {
+          "name": "Inerton Alloy",
+          "amount": 500
+        },
+        {
+          "name": "Quadium Alloy",
+          "amount": 100
+        }
+      ]
+    },
+    {
+      "name": "Gravity Chamber",
+      "value": 15000000000000,
+      "ingredients": [
+        {
+          "name": "Advanced Computer",
+          "amount": 60
+        },
+        {
+          "name": "Nuclear Reactor",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Robot",
+      "value": 50000000000000,
+      "ingredients": [
+        {
+          "name": "Scrith Alloy",
+          "amount": 300
+        },
+        {
+          "name": "Accumulator",
+          "amount": 90
+        }
+      ]
+    },
+    {
+      "name": "Fusion Capsule",
+      "value": 240000000000000,
+      "ingredients": [
+        {
+          "name": "Uru Alloy",
+          "amount": 200
+        },
+        {
+          "name": "Vibranium Alloy",
+          "amount": 100
+        },
+        {
+          "name": "Nuclear Capsule",
+          "amount": 100
+        }
+      ]
+    },
+    {
+      "name": "Teleporter",
+      "value": 1800000000000000,
+      "ingredients": [
+        {
+          "name": "Navigation Module",
+          "amount": 250
+        },
+        {
+          "name": "Gravity Chamber",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Fusion Reactor",
+      "value": 40000000000000000,
+      "ingredients": [
+        {
+          "name": "Nuclear Reactor",
+          "amount": 50
+        },
+        {
+          "name": "Collider",
+          "amount": 40
+        },
+        {
+          "name": "Fusion Capsule",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Subspace Relay",
+      "value": 10000000000000000,
+      "ingredients": [
+        {
+          "name": "Satellite Dish",
+          "amount": 100
+        },
+        {
+          "name": "Space Probe",
+          "amount": 70
+        },
+        {
+          "name": "Teleporter",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "name": "Advanced Robot",
+      "value": 29500000000000000,
+      "ingredients": [
+        {
+          "name": "Robot",
+          "amount": 200
+        },
+        {
+          "name": "Fusion Reactor",
+          "amount": 5
+        }
+      ]
+    }
+  ]
+}
