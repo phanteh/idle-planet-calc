@@ -223,6 +223,7 @@ func getIngredients(item GameItem) (ingredients map[string]Ingredient) {
 					ingredients[k] = Ingredient{v.Item, v.Value * i.Amount, v.Amount * i.Amount}
 				} else {
 					newItem.Amount += v.Amount * i.Amount
+					ingredients[k] = newItem
 				}
 			}
 		}
