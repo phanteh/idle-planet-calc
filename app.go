@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"maps"
 	"slices"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -16,13 +17,22 @@ import (
 )
 
 type App struct {
-	data     map[string]GameItem
-	itemList []string
-	orders   []*Order
-	results  []Ingredient
+	data          map[string]GameItem
+	itemList      []string
+	orders        []*Order
+	results       []Ingredient
+	craftMatBonus float64
+	smeltMatBonus float64
+	craftValBonus float64
+	smeltValBonus float64
 
-	orderContainer *fyne.Container
-	resultTable    *widget.Table
+	orderContainer    *fyne.Container
+	settingsContainer *fyne.Container
+	resultTable       *widget.Table
+	craftMatEntry     *widget.Entry
+	smeltMatEntry     *widget.Entry
+	craftValEntry     *widget.Entry
+	smeltValEntry     *widget.Entry
 }
 
 func NewApp(data *jsonGameData) (app *App) {
@@ -146,7 +156,64 @@ func (a *App) getAccordion(newOrderButton *widget.Button) *widget.Accordion {
 		widget.NewAccordionItem("Orders", container.NewVBox(
 			a.orderContainer,
 			container.NewHBox(newOrderButton),
-		)))
+			widget.NewAccordion(
+				widget.NewAccordionItem("Settings", container.NewVBox(
+					a.settingsContainer,
+				)),
+			),
+		)),
+	)
+}
+
+func (a *App) getSettings() *fyne.Container {
+	a.craftMatEntry = widget.NewEntry()
+	a.smeltMatEntry = widget.NewEntry()
+	a.craftValEntry = widget.NewEntry()
+	a.smeltValEntry = widget.NewEntry()
+
+	getVal := func(input string) float64 {
+		val, err := strconv.ParseFloat(input, 32)
+		if err != nil {
+			val = 1.0
+		}
+		return val
+	}
+
+	a.craftMatEntry.OnSubmitted = func(input string) {
+		val := getVal(input)
+		a.craftMatBonus = val
+		a.craftMatEntry.SetText(fmt.Sprintf("%.2f", val))
+	}
+	a.smeltMatEntry.OnSubmitted = func(input string) {
+		val := getVal(input)
+		a.smeltMatBonus = val
+		a.smeltMatEntry.SetText(fmt.Sprintf("%.2f", val))
+	}
+	a.craftValEntry.OnSubmitted = func(input string) {
+		val := getVal(input)
+		a.craftValBonus = val
+		a.craftValEntry.SetText(fmt.Sprintf("%.2f", val))
+	}
+	a.smeltValEntry.OnSubmitted = func(input string) {
+		val := getVal(input)
+		a.smeltValBonus = val
+		a.smeltValEntry.SetText(fmt.Sprintf("%.2f", val))
+	}
+
+	a.craftMatEntry.SetText("1.0")
+	a.smeltMatEntry.SetText("1.0")
+	a.craftValEntry.SetText("1.0")
+	a.smeltValEntry.SetText("1.0")
+
+	materials := widget.NewForm(
+		widget.NewFormItem("Smelt Material", a.craftMatEntry),
+		widget.NewFormItem("Craft Material", a.smeltMatEntry),
+	)
+	values := widget.NewForm(
+		widget.NewFormItem("Smelt Value", a.craftValEntry),
+		widget.NewFormItem("Craft Value", a.smeltValEntry),
+	)
+	return container.NewGridWithColumns(2, materials, values)
 }
 
 func (a *App) Run() {
@@ -154,8 +221,9 @@ func (a *App) Run() {
 	win := app.NewWindow("Idle Planet Calc")
 
 	a.orderContainer = container.NewVBox()
-	newOrderButton := widget.NewButtonWithIcon("", theme.ContentAddIcon(), a.newOrderHandler)
+	a.settingsContainer = a.getSettings()
 	a.resultTable = a.getResultsTable()
+	newOrderButton := widget.NewButtonWithIcon("", theme.ContentAddIcon(), a.newOrderHandler)
 	calculateButton := widget.NewButtonWithIcon("Calculate", theme.SettingsIcon(), a.calcResultsHandler)
 	accordion := a.getAccordion(newOrderButton)
 
