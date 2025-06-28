@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -36,35 +35,54 @@ func (o *Order) SetOnRemoved(onRemoved func()) {
 
 func (o *Order) CreateRenderer() fyne.WidgetRenderer {
 	amount := widget.NewEntry()
+	amount.SetText("1")
+	o.amount = 1
 	amount.OnChanged = func(s string) {
 		val, err := strconv.ParseInt(s, 10, 0)
 		if err != nil {
-			return
+			o.amount = 1
+			amount.SetText("1")
 		}
 		o.amount = int(val)
 	}
-	amount.Validator = validation.NewRegexp("^[0-9]+$", "Whole numbers only please")
-	amount.SetText("1")
+	amount.Resize(amount.MinSize())
+
+	decrement := widget.NewButtonWithIcon("", theme.MediaFastRewindIcon(), func() {
+		o.amount -= 1
+		amount.SetText(strconv.Itoa(o.amount))
+	})
+	increment := widget.NewButtonWithIcon("", theme.MediaFastForwardIcon(), func() {
+		o.amount += 1
+		amount.SetText(strconv.Itoa(o.amount))
+	})
+	remove := widget.NewButtonWithIcon("", theme.ContentRemoveIcon(), func() {
+		o.onRemoved()
+	})
+
+	decrement.Resize(decrement.MinSize().AddWidthHeight(-10, -10))
+	increment.Resize(increment.MinSize().AddWidthHeight(-10, -10))
+	remove.Resize(remove.MinSize().AddWidthHeight(-10, -10))
 
 	itemSelector := widget.NewSelect(o.options, func(input string) {
 		o.onItemChanged(input)
 	})
+	itemSelector.Resize(itemSelector.MinSize().AddWidthHeight(50, 0))
 
 	return &orderRenderer{
 		order:        o,
 		itemSelector: itemSelector,
 		amount:       amount,
-		remove: widget.NewButtonWithIcon("", theme.ContentRemoveIcon(), func() {
-			o.onRemoved()
-		}),
+		increment:    increment,
+		decrement:    decrement,
+		remove:       remove,
 	}
 }
 
 type orderRenderer struct {
-	order        *Order
-	itemSelector *widget.Select
-	amount       *widget.Entry
-	remove       *widget.Button
+	order                        *Order
+	itemSelector                 *widget.Select
+	amount                       *widget.Entry
+	increment, decrement, remove *widget.Button
 }
 
 func (o *orderRenderer) Destroy() {
@@ -73,14 +91,20 @@ func (o *orderRenderer) Destroy() {
 func (o *orderRenderer) Layout(size fyne.Size) {
 	padding := float32(4)
 	pos := fyne.NewPos(padding, padding)
+	buttonHeight := (size.Height / 2) - (o.increment.Size().Height / 2)
 	o.itemSelector.Move(pos)
-	o.itemSelector.Resize(o.itemSelector.MinSize().AddWidthHeight(100, 0))
 	pos.X += o.itemSelector.Size().Width + (padding * 2)
+	pos.Y = buttonHeight
+	o.decrement.Move(pos)
+	pos.X += o.decrement.Size().Width + (padding * 2)
+	pos.Y = padding
 	o.amount.Move(pos)
-	o.amount.Resize(o.amount.MinSize().AddWidthHeight(0, 0))
+	pos.X += o.amount.Size().Width + (padding * 2)
+	pos.Y = buttonHeight
+	o.increment.Move(pos)
+	pos.X += o.increment.Size().Width + (padding * 2)
 	pos.X = size.Width - (padding + o.remove.MinSize().Width)
 	o.remove.Move(pos)
-	o.remove.Resize(o.remove.MinSize())
 }
 
 func (o *orderRenderer) MinSize() fyne.Size {
@@ -91,7 +115,7 @@ func (o *orderRenderer) MinSize() fyne.Size {
 }
 
 func (o *orderRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{o.itemSelector, o.amount, o.remove}
+	return []fyne.CanvasObject{o.itemSelector, o.amount, o.increment, o.decrement, o.remove}
 }
 
 func (o *orderRenderer) Refresh() {

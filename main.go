@@ -13,7 +13,6 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dustin/go-humanize"
@@ -108,7 +107,7 @@ func buildUI() {
 	resultTable.ShowHeaderRow = true
 	resultTable.CreateHeader = func() fyne.CanvasObject {
 		label := widget.NewLabel("template")
-		label.SizeName = theme.SizeNameCaptionText
+		// label.SizeName = theme.SizeNameCaptionText
 		return label
 	}
 	calcHeader := func(id widget.TableCellID) string {
@@ -154,10 +153,6 @@ func buildUI() {
 		return result
 	}
 
-	ordersLabel := widget.NewLabel("Orders")
-	ordersLabel.SizeName = theme.SizeNameSubHeadingText
-	newOrdersContainer := container.NewHBox(ordersLabel, layout.NewSpacer(), newOrderButton)
-	newOrderButton.Resize(newOrderButton.MinSize())
 	calculateButton := widget.NewButtonWithIcon("Calculate", theme.SettingsIcon(), func() {
 		order := make([]Ingredient, 0)
 		for _, o := range orders {
@@ -170,12 +165,18 @@ func buildUI() {
 		displayResults(sortResults(result))
 	})
 
+	accordion := widget.NewAccordion(
+		widget.NewAccordionItem(
+			"Orders",
+			container.NewVBox(
+				orderContainer,
+				container.NewHBox(newOrderButton),
+			)))
+
 	w.SetContent(
 		container.NewBorder(
 			container.NewVBox(
-				newOrdersContainer,
-				getSeparator(),
-				orderContainer,
+				accordion,
 				calculateButton,
 				getSeparator(),
 			),
