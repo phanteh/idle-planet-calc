@@ -1,0 +1,8 @@
+Website = "https://github.com/phanteh/idle-planet-calc"
+
+[Details]
+  Icon = "icon.ico"
+  Name = "idle-planet-calc"
+  ID = "phanteh.idle.planet.calc"
+  Version = "1.0.0"
+  Build = 8

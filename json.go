@@ -1,11 +1,12 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
-	"fmt"
-	"io"
-	"os"
 )
+
+//go:embed inventory.json
+var inventoryBytes []byte
 
 type jsonGameData struct {
 	Ores   []jsonGameItem `json:"ores"`
@@ -25,21 +26,7 @@ type jsonIngredient struct {
 }
 
 func loadData() *jsonGameData {
-	jsonFile, err := os.Open("inventory.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	defer jsonFile.Close()
-
-	bytes, err := io.ReadAll(jsonFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	var data jsonGameData
-
-	json.Unmarshal(bytes, &data)
-
+	json.Unmarshal(inventoryBytes, &data)
 	return &data
 }

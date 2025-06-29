@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"maps"
+	"math"
 	"slices"
 	"strconv"
 
@@ -11,37 +12,48 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dustin/go-humanize"
 )
 
 type App struct {
-	data          map[string]GameItem
-	itemList      []string
-	orders        []*Order
-	results       []Ingredient
-	craftMatBonus float64
-	smeltMatBonus float64
-	craftValBonus float64
-	smeltValBonus float64
-
-	orderContainer    *fyne.Container
-	settingsContainer *fyne.Container
-	resultTable       *widget.Table
-	craftMatEntry     *widget.Entry
-	smeltMatEntry     *widget.Entry
-	craftValEntry     *widget.Entry
-	smeltValEntry     *widget.Entry
+	data            map[string]GameItem
+	itemList        []string
+	orders          []*Order
+	results         []Ingredient
+	craftMatBonus   float64
+	smeltMatBonus   float64
+	craftValBonus   float64
+	smeltValBonus   float64
+	underforgeBonus float64
+	dormsBonus      float64
+	orderContainer  *fyne.Container
+	bonusContainer  *fyne.Container
+	resultSummary   *fyne.Container
+	resultTable     *widget.Table
+	craftMatEntry   *widget.Entry
+	smeltMatEntry   *widget.Entry
+	craftValEntry   *widget.Entry
+	smeltValEntry   *widget.Entry
+	underforgeEntry *widget.Entry
+	dormsEntry      *widget.Entry
 }
 
 func NewApp(data *jsonGameData) (app *App) {
 	gameData := getGameData(data)
 	app = &App{
-		data:     gameData,
-		itemList: getItemList(gameData),
-		orders:   make([]*Order, 0),
-		results:  make([]Ingredient, 0),
+		data:            gameData,
+		itemList:        getItemList(gameData),
+		orders:          make([]*Order, 0),
+		results:         make([]Ingredient, 0),
+		craftMatBonus:   1.0,
+		smeltMatBonus:   1.0,
+		craftValBonus:   1.0,
+		smeltValBonus:   1.0,
+		underforgeBonus: 1.0,
+		dormsBonus:      1.0,
 	}
 	return
 }
@@ -79,16 +91,16 @@ func (a *App) getResultsTable() *widget.Table {
 			case 1:
 				text = humanize.Comma(int64(a.results[tci.Row].Amount))
 			case 2:
-				text = humanize.Comma(int64(a.results[tci.Row].Value))
+				text = fmt.Sprintf("$%s", humanize.Comma(int64(a.results[tci.Row].Value)))
 			default:
 				text = "Template"
 			}
 			co.(*widget.Label).SetText(text)
 		},
 	)
-	resultTable.SetColumnWidth(0, 130)
-	resultTable.SetColumnWidth(1, 100)
-	resultTable.SetColumnWidth(2, 140)
+	resultTable.SetColumnWidth(0, 120)
+	resultTable.SetColumnWidth(1, 80)
+	resultTable.SetColumnWidth(2, 120)
 	resultTable.ShowHeaderRow = true
 	resultTable.CreateHeader = func() fyne.CanvasObject {
 		label := widget.NewLabel("template")
@@ -147,29 +159,73 @@ func (a *App) calcResultsHandler() {
 			Amount: o.amount,
 		})
 	}
-	result := calculateIngredients(order)
+	result := a.calculateIngredients(order)
 	a.displayResults(a.sortResults(result))
+	a.updateSummary()
 }
 
-func (a *App) getAccordion(newOrderButton *widget.Button) *widget.Accordion {
+func (a *App) updateSummary() {
+	getSmolLable := func(text string) *widget.Label {
+		label := widget.NewLabel(text)
+		label.SizeName = theme.SizeNameCaptionText
+		return label
+	}
+	a.resultSummary.RemoveAll()
+
+	total := 0
+	for index, o := range a.orders {
+		orderValue := o.amount * o.orderItem.Value
+		if o.orderItem.Type == Item {
+			orderValue = int(math.Round(float64(orderValue) * a.craftValBonus))
+		} else {
+			orderValue = int(math.Round(float64(orderValue) * a.smeltValBonus))
+		}
+		total += orderValue
+		order := container.NewHBox()
+		if index > 0 {
+			a.resultSummary.Add(getSeparator())
+		}
+		ingredients := container.NewVBox()
+		for index, i := range o.orderItem.Ingredients {
+			if index > 0 {
+				ingredients.Add(getSeparator())
+			}
+			ingredients.Add(getSmolLable(fmt.Sprintf("%d x %s", i.Amount*o.amount, i.Item.Name)))
+		}
+		order.Add(
+			container.NewVBox(
+				widget.NewLabel(fmt.Sprintf("%d x %s", o.amount, o.orderItem.Name)),
+				getSmolLable(fmt.Sprintf("$%s", humanize.Comma(int64(orderValue)))),
+			))
+		order.Add(layout.NewSpacer())
+		order.Add(ingredients)
+		a.resultSummary.Add(order)
+	}
+	a.resultSummary.Add(getSeparator())
+	a.resultSummary.Add(widget.NewLabel(fmt.Sprintf("Total: $%s", humanize.Comma(int64(total)))))
+}
+
+func (a *App) getOrderAccordion(newOrderButton *widget.Button) *widget.Accordion {
 	return widget.NewAccordion(
 		widget.NewAccordionItem("Orders", container.NewVBox(
 			a.orderContainer,
 			container.NewHBox(newOrderButton),
 			widget.NewAccordion(
-				widget.NewAccordionItem("Settings", container.NewVBox(
-					a.settingsContainer,
+				widget.NewAccordionItem("Bonuses", container.NewVBox(
+					a.bonusContainer,
 				)),
-			),
-		)),
+			)),
+		),
 	)
 }
 
-func (a *App) getSettings() *fyne.Container {
+func (a *App) getBonuses() *fyne.Container {
 	a.craftMatEntry = widget.NewEntry()
 	a.smeltMatEntry = widget.NewEntry()
 	a.craftValEntry = widget.NewEntry()
 	a.smeltValEntry = widget.NewEntry()
+	a.underforgeEntry = widget.NewEntry()
+	a.dormsEntry = widget.NewEntry()
 
 	getVal := func(input string) float64 {
 		val, err := strconv.ParseFloat(input, 32)
@@ -199,19 +255,33 @@ func (a *App) getSettings() *fyne.Container {
 		a.smeltValBonus = val
 		a.smeltValEntry.SetText(fmt.Sprintf("%.2f", val))
 	}
+	a.underforgeEntry.OnSubmitted = func(input string) {
+		val := getVal(input)
+		a.underforgeBonus = val
+		a.underforgeEntry.SetText(fmt.Sprintf("%.2f", val))
+	}
+	a.dormsEntry.OnSubmitted = func(input string) {
+		val := getVal(input)
+		a.dormsBonus = val
+		a.dormsEntry.SetText(fmt.Sprintf("%.2f", val))
+	}
 
-	a.craftMatEntry.SetText("1.0")
-	a.smeltMatEntry.SetText("1.0")
-	a.craftValEntry.SetText("1.0")
-	a.smeltValEntry.SetText("1.0")
+	a.craftMatEntry.SetText("1.00")
+	a.smeltMatEntry.SetText("1.00")
+	a.craftValEntry.SetText("1.00")
+	a.smeltValEntry.SetText("1.00")
+	a.underforgeEntry.SetText("1.00")
+	a.dormsEntry.SetText("1.00")
 
 	materials := widget.NewForm(
-		widget.NewFormItem("Smelt Material", a.craftMatEntry),
-		widget.NewFormItem("Craft Material", a.smeltMatEntry),
+		widget.NewFormItem("Smelt Material", a.smeltMatEntry),
+		widget.NewFormItem("Craft Material", a.craftMatEntry),
+		widget.NewFormItem("Underforge", a.underforgeEntry),
 	)
 	values := widget.NewForm(
-		widget.NewFormItem("Smelt Value", a.craftValEntry),
-		widget.NewFormItem("Craft Value", a.smeltValEntry),
+		widget.NewFormItem("Smelt Value", a.smeltValEntry),
+		widget.NewFormItem("Craft Value", a.craftValEntry),
+		widget.NewFormItem("Dorms", a.dormsEntry),
 	)
 	return container.NewGridWithColumns(2, materials, values)
 }
@@ -221,18 +291,21 @@ func (a *App) Run() {
 	win := app.NewWindow("Idle Planet Calc")
 
 	a.orderContainer = container.NewVBox()
-	a.settingsContainer = a.getSettings()
+	a.bonusContainer = a.getBonuses()
 	a.resultTable = a.getResultsTable()
-	newOrderButton := widget.NewButtonWithIcon("", theme.ContentAddIcon(), a.newOrderHandler)
+	a.resultSummary = container.NewVBox()
+	newOrderButton := widget.NewButtonWithIcon("Add ", theme.ContentAddIcon(), a.newOrderHandler)
 	calculateButton := widget.NewButtonWithIcon("Calculate", theme.SettingsIcon(), a.calcResultsHandler)
-	accordion := a.getAccordion(newOrderButton)
+	orderAccordion := a.getOrderAccordion(newOrderButton)
 
 	win.SetContent(
 		container.NewBorder(
 			container.NewVBox(
-				accordion,
+				orderAccordion,
 				calculateButton,
 				getSeparator(),
+				widget.NewAccordion(
+					widget.NewAccordionItem("Summary", a.resultSummary)),
 			),
 			nil,
 			nil,
@@ -338,12 +411,12 @@ func getGameData(data *jsonGameData) map[string]GameItem {
 	return gameItems
 }
 
-func calculateIngredients(order []Ingredient) (bill map[string]Ingredient) {
+func (a *App) calculateIngredients(order []Ingredient) (bill map[string]Ingredient) {
 	bill = make(map[string]Ingredient)
 	for _, o := range order {
-		ingredients := getIngredients(o.Item)
+		ingredients := a.getIngredients(o.Item)
 		for _, i := range ingredients {
-			value := i.Item.Value * i.Amount * o.Amount
+			value := i.Value * i.Amount * o.Amount
 			amount := i.Amount * o.Amount
 			if item, found := bill[i.Item.Name]; !found {
 				bill[i.Item.Name] = Ingredient{i.Item, value, amount}
@@ -356,16 +429,35 @@ func calculateIngredients(order []Ingredient) (bill map[string]Ingredient) {
 	return
 }
 
-func getIngredients(item GameItem) (ingredients map[string]Ingredient) {
+func (a *App) getIngredients(item GameItem) (ingredients map[string]Ingredient) {
 	ingredients = make(map[string]Ingredient, 0)
 	for _, i := range item.Ingredients {
+		amount := float64(i.Amount)
+		value := float64(i.Item.Value)
+		if i.Item.Type == Item {
+			if i.Amount > 2 {
+				bonusAmount := math.Round(amount - (amount / a.dormsBonus))
+				amount = math.Round(amount / a.craftMatBonus)
+				amount -= bonusAmount
+			}
+			value = math.Round(value * a.craftValBonus)
+		} else {
+			if i.Amount > 2 {
+				bonusAmount := math.Round(amount - (amount / a.underforgeBonus))
+				amount = math.Round(amount / a.smeltMatBonus)
+				amount -= bonusAmount
+			}
+			value = math.Round(value * a.smeltValBonus)
+		}
+
 		if newItem, found := ingredients[i.Item.Name]; !found {
-			ingredients[i.Item.Name] = Ingredient{i.Item, i.Value, i.Amount}
+			ingredients[i.Item.Name] = Ingredient{i.Item, int(value), int(amount)}
 		} else {
 			newItem.Amount += i.Amount
 		}
+
 		if len(i.Item.Ingredients) > 0 {
-			subIngredients := getIngredients(i.Item)
+			subIngredients := a.getIngredients(i.Item)
 			for k, v := range subIngredients {
 				if newItem, found := ingredients[k]; !found {
 					ingredients[k] = Ingredient{v.Item, v.Value * i.Amount, v.Amount * i.Amount}
