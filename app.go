@@ -434,7 +434,7 @@ func (a *App) getIngredients(item GameItem) (ingredients map[string]Ingredient) 
 	for _, i := range item.Ingredients {
 		amount := float64(i.Amount)
 		value := float64(i.Item.Value)
-		if i.Item.Type == Item {
+		if item.Type == Item {
 			if i.Amount > 2 {
 				bonusAmount := math.Round(amount - (amount / a.dormsBonus))
 				amount = math.Round(amount / a.craftMatBonus)
