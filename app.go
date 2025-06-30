@@ -174,12 +174,8 @@ func (a *App) updateSummary() {
 
 	total := 0
 	for index, o := range a.orders {
-		orderValue := o.amount * o.orderItem.Value
-		if o.orderItem.Type == Item {
-			orderValue = int(math.Round(float64(orderValue) * a.craftValBonus))
-		} else {
-			orderValue = int(math.Round(float64(orderValue) * a.smeltValBonus))
-		}
+		itemValue := a.getBonusedValue(o.orderItem.Type, o.orderItem.Value)
+		orderValue := o.amount * itemValue
 		total += orderValue
 		order := container.NewHBox()
 		if index > 0 {
@@ -190,11 +186,12 @@ func (a *App) updateSummary() {
 			if index > 0 {
 				ingredients.Add(getSeparator())
 			}
-			ingredients.Add(getSmolLable(fmt.Sprintf("%d x %s", i.Amount*o.amount, i.Item.Name)))
+			ingredientAmount := a.getBonusedMaterialAmount(o.orderItem.Type, i.Amount)
+			ingredients.Add(getSmolLable(fmt.Sprintf("%s x %s", humanize.Comma(int64(ingredientAmount*o.amount)), i.Item.Name)))
 		}
 		order.Add(
 			container.NewVBox(
-				widget.NewLabel(fmt.Sprintf("%d x %s", o.amount, o.orderItem.Name)),
+				widget.NewLabel(fmt.Sprintf("%s x %s", humanize.Comma(int64(o.amount)), o.orderItem.Name)),
 				getSmolLable(fmt.Sprintf("$%s", humanize.Comma(int64(orderValue)))),
 			))
 		order.Add(layout.NewSpacer())
@@ -429,40 +426,56 @@ func (a *App) calculateIngredients(order []Ingredient) (bill map[string]Ingredie
 	return
 }
 
+func (a *App) getBonusedMaterialAmount(itemType ItemType, value int) int {
+	var roomBonus, projectBonus float64
+	amount := float64(value)
+
+	if itemType == Item {
+		roomBonus = a.dormsBonus
+		projectBonus = a.craftMatBonus
+	} else {
+		roomBonus = a.underforgeBonus
+		projectBonus = a.smeltMatBonus
+	}
+
+	basePrice := amount - (amount * (roomBonus - 1))
+	smeltBonus := basePrice * (projectBonus - 1)
+	if smeltBonus < 1 {
+		smeltBonus = math.Round(smeltBonus)
+	}
+	return int(math.Round(basePrice - smeltBonus))
+}
+
+func (a *App) getBonusedValue(itemType ItemType, value int) int {
+	var projectBonus float64
+	amount := float64(value)
+	if itemType == Item {
+		projectBonus = a.craftValBonus
+	} else {
+		projectBonus = a.smeltValBonus
+	}
+	return int(math.Round(amount * projectBonus))
+}
+
 func (a *App) getIngredients(item GameItem) (ingredients map[string]Ingredient) {
 	ingredients = make(map[string]Ingredient, 0)
 	for _, i := range item.Ingredients {
-		amount := float64(i.Amount)
-		value := float64(i.Item.Value)
-		if item.Type == Item {
-			if i.Amount > 2 {
-				bonusAmount := math.Round(amount - (amount / a.dormsBonus))
-				amount = math.Round(amount / a.craftMatBonus)
-				amount -= bonusAmount
-			}
-			value = math.Round(value * a.craftValBonus)
-		} else {
-			if i.Amount > 2 {
-				bonusAmount := math.Round(amount - (amount / a.underforgeBonus))
-				amount = math.Round(amount / a.smeltMatBonus)
-				amount -= bonusAmount
-			}
-			value = math.Round(value * a.smeltValBonus)
-		}
+		amount := a.getBonusedMaterialAmount(item.Type, i.Amount)
+		value := a.getBonusedValue(i.Item.Type, i.Item.Value)
 
 		if newItem, found := ingredients[i.Item.Name]; !found {
-			ingredients[i.Item.Name] = Ingredient{i.Item, int(value), int(amount)}
+			ingredients[i.Item.Name] = Ingredient{i.Item, value, amount}
 		} else {
-			newItem.Amount += i.Amount
+			newItem.Amount += amount
 		}
 
 		if len(i.Item.Ingredients) > 0 {
 			subIngredients := a.getIngredients(i.Item)
 			for k, v := range subIngredients {
 				if newItem, found := ingredients[k]; !found {
-					ingredients[k] = Ingredient{v.Item, v.Value * i.Amount, v.Amount * i.Amount}
+					ingredients[k] = Ingredient{v.Item, v.Value, v.Amount * amount}
 				} else {
-					newItem.Amount += v.Amount * i.Amount
+					newItem.Amount += v.Amount * amount
 					ingredients[k] = newItem
 				}
 			}
