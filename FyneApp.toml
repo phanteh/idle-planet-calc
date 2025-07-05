@@ -4,5 +4,5 @@ Website = "https://github.com/phanteh/idle-planet-calc"
   Icon = "icon.ico"
   Name = "idle-planet-calc"
   ID = "phanteh.idle.planet.calc"
-  Version = "1.0.4"
-  Build = 137
+  Version = "1.0.5"
+  Build = 143

@@ -140,7 +140,7 @@ func NewSummaryScreen() *SummaryScreen {
 	return item
 }
 
-func (s *SummaryScreen) Display(ingredients []*Order) {
+func (s *SummaryScreen) Display(ingredients []ResultItem) {
 	s.ingredients = make([]*ResultSummary, 0)
 	for _, i := range ingredients {
 		s.ingredients = append(s.ingredients, NewResultSummary(i))
@@ -205,7 +205,7 @@ func (s *summaryScreenRenderer) CheckChildren() {
 		len(s.summaryScreen.ingredients) > 0 {
 		total := 0
 		for index, ingredient := range s.summaryScreen.ingredients {
-			total += ingredient.order.orderItem.Value
+			total += ingredient.result.Value
 			if index > 0 {
 				s.container.Add(getSeparator())
 			}
@@ -226,13 +226,13 @@ func (s *summaryScreenRenderer) Refresh() {
 type ResultSummary struct {
 	widget.BaseWidget
 	labelWidth float32
-	order      *Order
+	result     ResultItem
 	renderer   *resultSummaryRenderer
 }
 
-func NewResultSummary(order *Order) *ResultSummary {
+func NewResultSummary(result ResultItem) *ResultSummary {
 	item := &ResultSummary{
-		order: order,
+		result: result,
 	}
 	item.ExtendBaseWidget(item)
 	return item
@@ -244,9 +244,9 @@ func (r *ResultSummary) setLabelWidth(value float32) {
 
 func (r *ResultSummary) CreateRenderer() fyne.WidgetRenderer {
 	nameLabel := widget.NewLabel(fmt.Sprintf("%d x %s",
-		r.order.amount, r.order.orderItem.Name))
+		r.result.Amount, r.result.Name))
 	valueLabel := widget.NewLabel(fmt.Sprintf("$%s",
-		humanize.Comma(int64(r.order.orderItem.Value))))
+		humanize.Comma(int64(r.result.Value))))
 	valueLabel.SizeName = theme.SizeNameCaptionText
 
 	subContainer := container.NewVBox()
@@ -322,12 +322,12 @@ func (r *resultSummaryRenderer) Objects() []fyne.CanvasObject {
 
 func (r *resultSummaryRenderer) CheckChildren() {
 	if len(r.subContainer.Objects) == 0 &&
-		len(r.resultSummary.order.orderItem.Ingredients) > 0 {
-		for index, ingredient := range r.resultSummary.order.orderItem.Ingredients {
+		len(r.resultSummary.result.Ingredients) > 0 {
+		for index, ingredient := range r.resultSummary.result.Ingredients {
 			if index > 0 {
 				r.subContainer.Add(getSeparator())
 			}
-			label := widget.NewLabel(fmt.Sprintf("%d x %s", ingredient.Amount, ingredient.Item.Name))
+			label := widget.NewLabel(fmt.Sprintf("%d x %s", ingredient.Amount, ingredient.Name))
 			label.SizeName = theme.SizeNameCaptionText
 			r.subContainer.Add(label)
 		}

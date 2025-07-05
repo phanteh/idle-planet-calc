@@ -30,3 +30,10 @@ type Ingredient struct {
 	Value  int
 	Amount int
 }
+
+type ResultItem struct {
+	Amount      int
+	Name        string
+	Value       int
+	Ingredients []ResultItem
+}

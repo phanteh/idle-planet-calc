@@ -21,7 +21,7 @@ type App struct {
 	app              fyne.App
 	data             map[string]GameItem
 	itemList         []string
-	orders           []*Order
+	orders           []Ingredient
 	results          []Ingredient
 	craftMatBonus    float64
 	smeltMatBonus    float64
@@ -45,16 +45,10 @@ type App struct {
 func NewApp(data *jsonGameData) (app *App) {
 	gameData := getGameData(data)
 	app = &App{
-		data:            gameData,
-		itemList:        getItemList(gameData),
-		orders:          make([]*Order, 0),
-		results:         make([]Ingredient, 0),
-		craftMatBonus:   1.0,
-		smeltMatBonus:   1.0,
-		craftValBonus:   1.0,
-		smeltValBonus:   1.0,
-		underforgeBonus: 1.0,
-		dormsBonus:      1.0,
+		data:     gameData,
+		itemList: getItemList(gameData),
+		orders:   make([]Ingredient, 0),
+		results:  make([]Ingredient, 0),
 	}
 	return
 }
@@ -62,11 +56,8 @@ func NewApp(data *jsonGameData) (app *App) {
 func (a *App) newOrderHandler() {
 	item := NewOrder(a.itemList)
 	a.orderContainer.Add(item)
-	a.orders = append(a.orders, item)
 	item.SetOnRemoved(func() {
 		a.orderContainer.Remove(item)
-		index := slices.Index(a.orders, item)
-		a.orders = slices.Delete(a.orders, index, index+1)
 	})
 	item.SetOnItemChanged(func(name string) {
 		gameItem := a.data[name]
@@ -128,9 +119,32 @@ func (a *App) getResultsTable() *widget.Table {
 func (a *App) displayResults(ingredients []Ingredient) {
 	a.results = ingredients
 	a.resultTable.Refresh()
-	a.resultSummary.Display(a.orders)
+	a.resultSummary.Display(a.getDisplayResults(a.orders))
 	a.resultSummary.Refresh()
 	a.summaryAccordion.Refresh()
+}
+
+func (a *App) getDisplayResults(order []Ingredient) []ResultItem {
+	result := make([]ResultItem, 0)
+	for _, o := range order {
+		order := ResultItem{
+			Amount:      o.Amount,
+			Name:        o.Item.Name,
+			Value:       a.getBonusedValue(o.Item.Type, o.Item.Value) * o.Amount,
+			Ingredients: make([]ResultItem, 0),
+		}
+		println(a.getBonusedValue(o.Item.Type, o.Item.Value))
+
+		for _, i := range o.Item.Ingredients {
+			order.Ingredients = append(order.Ingredients, ResultItem{
+				Amount: a.getBonusedMaterialAmount(o.Item.Type, i.Amount) * o.Amount,
+				Name:   i.Item.Name,
+				Value:  a.getBonusedValue(i.Item.Type, i.Value) * o.Amount,
+			})
+		}
+		result = append(result, order)
+	}
+	return result
 }
 
 func (a *App) sortResults(ingredients map[string]Ingredient) []Ingredient {
@@ -156,14 +170,14 @@ func (a *App) sortResults(ingredients map[string]Ingredient) []Ingredient {
 }
 
 func (a *App) calcResultsHandler() {
-	order := make([]Ingredient, 0)
-	for _, o := range a.orders {
-		order = append(order, Ingredient{
-			Item:   o.orderItem,
-			Amount: o.amount,
+	a.orders = make([]Ingredient, 0)
+	for _, o := range a.orderContainer.Objects {
+		a.orders = append(a.orders, Ingredient{
+			Item:   o.(*Order).orderItem,
+			Amount: o.(*Order).amount,
 		})
 	}
-	result := a.calculateIngredients(order)
+	result := a.calculateIngredients(a.orders)
 	a.displayResults(a.sortResults(result))
 }
 
@@ -251,6 +265,8 @@ func (a *App) getBonuses() *fyne.Container {
 func (a *App) onStopped() {
 	a.app.Preferences().SetFloat("craftMatBonus", a.craftMatBonus)
 	a.app.Preferences().SetFloat("smeltMatBonus", a.smeltMatBonus)
+	a.app.Preferences().SetFloat("craftValBonus", a.craftValBonus)
+	a.app.Preferences().SetFloat("smeltValBonus", a.smeltValBonus)
 	a.app.Preferences().SetFloat("dormsBonus", a.dormsBonus)
 	a.app.Preferences().SetFloat("forgeBonus", a.underforgeBonus)
 }
@@ -258,6 +274,8 @@ func (a *App) onStopped() {
 func (a *App) loadPreferences() {
 	a.craftMatBonus = a.app.Preferences().FloatWithFallback("craftMatBonus", 1.0)
 	a.smeltMatBonus = a.app.Preferences().FloatWithFallback("smeltMatBonus", 1.0)
+	a.craftValBonus = a.app.Preferences().FloatWithFallback("craftValBonus", 1.0)
+	a.smeltValBonus = a.app.Preferences().FloatWithFallback("smeltValBonus", 1.0)
 	a.dormsBonus = a.app.Preferences().FloatWithFallback("dormsBonus", 1.0)
 	a.underforgeBonus = a.app.Preferences().FloatWithFallback("forgeBonus", 1.0)
 }
@@ -394,7 +412,7 @@ func (a *App) calculateIngredients(order []Ingredient) (bill map[string]Ingredie
 	for _, o := range order {
 		ingredients := a.getIngredients(o.Item)
 		for _, i := range ingredients {
-			value := i.Value * i.Amount * o.Amount
+			value := i.Item.Value * i.Amount * o.Amount
 			amount := i.Amount * o.Amount
 			if item, found := bill[i.Item.Name]; !found {
 				bill[i.Item.Name] = Ingredient{i.Item, value, amount}
