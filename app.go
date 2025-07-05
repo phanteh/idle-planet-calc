@@ -12,34 +12,32 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/validation"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dustin/go-humanize"
 )
 
 type App struct {
-	app              fyne.App
-	data             map[string]GameItem
-	itemList         []string
-	orders           []Ingredient
-	results          []Ingredient
-	craftMatBonus    float64
-	smeltMatBonus    float64
-	craftValBonus    float64
-	smeltValBonus    float64
-	underforgeBonus  float64
-	dormsBonus       float64
-	orderContainer   *fyne.Container
-	bonusContainer   *fyne.Container
-	resultSummary    *SummaryScreen
-	summaryAccordion *widget.Accordion
-	resultTable      *widget.Table
-	craftMatEntry    *widget.Entry
-	smeltMatEntry    *widget.Entry
-	craftValEntry    *widget.Entry
-	smeltValEntry    *widget.Entry
-	underforgeEntry  *widget.Entry
-	dormsEntry       *widget.Entry
+	app                fyne.App
+	mainWindow         fyne.Window
+	data               map[string]GameItem
+	itemList           []string
+	orders             []Ingredient
+	results            []Ingredient
+	craftingEfficiency bool
+	smeltingEfficiency bool
+	craftValBonus      float64
+	smeltValBonus      float64
+	underforgeBonus    float64
+	dormsBonus         float64
+	orderContainer     *fyne.Container
+	bonusContainer     *fyne.Container
+	resultSummary      *SummaryScreen
+	summaryAccordion   *widget.Accordion
+	resultTable        *widget.Table
 }
 
 func NewApp(data *jsonGameData) (app *App) {
@@ -182,89 +180,90 @@ func (a *App) calcResultsHandler() {
 }
 
 func (a *App) getOrderAccordion(newOrderButton *widget.Button) *widget.Accordion {
+	bonusDialog := dialog.NewCustom("Bonuses", "Close", a.bonusContainer, a.mainWindow)
+	bonusDialog.Resize(bonusDialog.MinSize().AddWidthHeight(30, 0))
+	bonusButton := widget.NewButtonWithIcon("Bonuses", theme.SettingsIcon(), func() {
+		bonusDialog.Show()
+	})
 	return widget.NewAccordion(
 		widget.NewAccordionItem("Orders", container.NewVBox(
 			a.orderContainer,
-			container.NewHBox(newOrderButton),
-			widget.NewAccordion(
-				widget.NewAccordionItem("Bonuses", container.NewVBox(
-					a.bonusContainer,
-				)),
-			)),
-		),
+			container.NewHBox(
+				newOrderButton,
+				layout.NewSpacer(),
+				bonusButton,
+			),
+		)),
 	)
 }
 
 func (a *App) getBonuses() *fyne.Container {
-	a.craftMatEntry = widget.NewEntry()
-	a.smeltMatEntry = widget.NewEntry()
-	a.craftValEntry = widget.NewEntry()
-	a.smeltValEntry = widget.NewEntry()
-	a.underforgeEntry = widget.NewEntry()
-	a.dormsEntry = widget.NewEntry()
-
 	getVal := func(input string) float64 {
 		val, err := strconv.ParseFloat(input, 32)
-		if err != nil {
+		if err != nil || val == float64(0) {
 			val = 1.0
 		}
 		return val
 	}
+	getFormattedEntry := func() *widget.Entry {
+		entry := widget.NewEntry()
+		entry.Resize(entry.MinSize().AddWidthHeight(20, 0))
+		entry.Validator = validation.NewRegexp("^[0-9.]+$", "Numbers only please")
+		entry.OnSubmitted = func(input string) {
+			entry.SetText(fmt.Sprintf("%.2f", getVal(entry.Text)))
+		}
+		return entry
+	}
+	smeltEfficiency := widget.NewCheck("", func(input bool) {
+		a.smeltingEfficiency = input
+	})
+	craftEfficiency := widget.NewCheck("", func(input bool) {
+		a.craftingEfficiency = input
+	})
+	craftValEntry := getFormattedEntry()
+	smeltValEntry := getFormattedEntry()
+	underforgeEntry := getFormattedEntry()
+	dormsEntry := getFormattedEntry()
 
-	a.craftMatEntry.OnSubmitted = func(input string) {
-		val := getVal(input)
-		a.craftMatBonus = val
-		a.craftMatEntry.SetText(fmt.Sprintf("%.2f", val))
-	}
-	a.smeltMatEntry.OnSubmitted = func(input string) {
-		val := getVal(input)
-		a.smeltMatBonus = val
-		a.smeltMatEntry.SetText(fmt.Sprintf("%.2f", val))
-	}
-	a.craftValEntry.OnSubmitted = func(input string) {
+	craftValEntry.OnChanged = func(input string) {
 		val := getVal(input)
 		a.craftValBonus = val
-		a.craftValEntry.SetText(fmt.Sprintf("%.2f", val))
 	}
-	a.smeltValEntry.OnSubmitted = func(input string) {
+	smeltValEntry.OnChanged = func(input string) {
 		val := getVal(input)
 		a.smeltValBonus = val
-		a.smeltValEntry.SetText(fmt.Sprintf("%.2f", val))
 	}
-	a.underforgeEntry.OnSubmitted = func(input string) {
+	underforgeEntry.OnChanged = func(input string) {
 		val := getVal(input)
 		a.underforgeBonus = val
-		a.underforgeEntry.SetText(fmt.Sprintf("%.2f", val))
 	}
-	a.dormsEntry.OnSubmitted = func(input string) {
+	dormsEntry.OnChanged = func(input string) {
 		val := getVal(input)
 		a.dormsBonus = val
-		a.dormsEntry.SetText(fmt.Sprintf("%.2f", val))
 	}
 
-	a.craftMatEntry.SetText(fmt.Sprintf("%.2f", a.craftMatBonus))
-	a.smeltMatEntry.SetText(fmt.Sprintf("%.2f", a.smeltMatBonus))
-	a.craftValEntry.SetText(fmt.Sprintf("%.2f", a.craftValBonus))
-	a.smeltValEntry.SetText(fmt.Sprintf("%.2f", a.smeltValBonus))
-	a.underforgeEntry.SetText(fmt.Sprintf("%.2f", a.underforgeBonus))
-	a.dormsEntry.SetText(fmt.Sprintf("%.2f", a.dormsBonus))
+	craftEfficiency.Checked = a.craftingEfficiency
+	smeltEfficiency.Checked = a.smeltingEfficiency
+	craftValEntry.SetText(fmt.Sprintf("%.2f", a.craftValBonus))
+	smeltValEntry.SetText(fmt.Sprintf("%.2f", a.smeltValBonus))
+	underforgeEntry.SetText(fmt.Sprintf("%.2f", a.underforgeBonus))
+	dormsEntry.SetText(fmt.Sprintf("%.2f", a.dormsBonus))
 
-	materials := widget.NewForm(
-		widget.NewFormItem("Smelt Material", a.smeltMatEntry),
-		widget.NewFormItem("Craft Material", a.craftMatEntry),
-		widget.NewFormItem("Underforge", a.underforgeEntry),
+	bonuses := widget.NewForm(
+		widget.NewFormItem("Craft Eff.", craftEfficiency),
+		widget.NewFormItem("Smelt Eff.", smeltEfficiency),
+		widget.NewFormItem("Smelt Value", smeltValEntry),
+		widget.NewFormItem("Craft Value", craftValEntry),
+		widget.NewFormItem("Underforge", underforgeEntry),
+		widget.NewFormItem("Dorms", dormsEntry),
 	)
-	values := widget.NewForm(
-		widget.NewFormItem("Smelt Value", a.smeltValEntry),
-		widget.NewFormItem("Craft Value", a.craftValEntry),
-		widget.NewFormItem("Dorms", a.dormsEntry),
-	)
-	return container.NewGridWithColumns(2, materials, values)
+
+	return container.NewVBox(bonuses)
 }
 
 func (a *App) onStopped() {
-	a.app.Preferences().SetFloat("craftMatBonus", a.craftMatBonus)
-	a.app.Preferences().SetFloat("smeltMatBonus", a.smeltMatBonus)
+	a.app.Preferences().SetBool("smeltingEfficiency", a.smeltingEfficiency)
+	a.app.Preferences().SetBool("craftingEfficiency", a.craftingEfficiency)
 	a.app.Preferences().SetFloat("craftValBonus", a.craftValBonus)
 	a.app.Preferences().SetFloat("smeltValBonus", a.smeltValBonus)
 	a.app.Preferences().SetFloat("dormsBonus", a.dormsBonus)
@@ -272,8 +271,8 @@ func (a *App) onStopped() {
 }
 
 func (a *App) loadPreferences() {
-	a.craftMatBonus = a.app.Preferences().FloatWithFallback("craftMatBonus", 1.0)
-	a.smeltMatBonus = a.app.Preferences().FloatWithFallback("smeltMatBonus", 1.0)
+	a.smeltingEfficiency = a.app.Preferences().BoolWithFallback("smeltingEfficiency", false)
+	a.craftingEfficiency = a.app.Preferences().BoolWithFallback("craftingEfficiency", false)
 	a.craftValBonus = a.app.Preferences().FloatWithFallback("craftValBonus", 1.0)
 	a.smeltValBonus = a.app.Preferences().FloatWithFallback("smeltValBonus", 1.0)
 	a.dormsBonus = a.app.Preferences().FloatWithFallback("dormsBonus", 1.0)
@@ -282,7 +281,7 @@ func (a *App) loadPreferences() {
 
 func (a *App) Run() {
 	a.app = app.New()
-	win := a.app.NewWindow("Idle Planet Calc")
+	a.mainWindow = a.app.NewWindow("Idle Planet Calc")
 
 	a.loadPreferences()
 	a.orderContainer = container.NewVBox()
@@ -290,12 +289,12 @@ func (a *App) Run() {
 	a.resultTable = a.getResultsTable()
 	a.resultSummary = NewSummaryScreen()
 	newOrderButton := widget.NewButtonWithIcon("Add ", theme.ContentAddIcon(), a.newOrderHandler)
-	calculateButton := widget.NewButtonWithIcon("Calculate", theme.SettingsIcon(), a.calcResultsHandler)
+	calculateButton := widget.NewButtonWithIcon("Calculate", theme.ViewRefreshIcon(), a.calcResultsHandler)
 	orderAccordion := a.getOrderAccordion(newOrderButton)
 	a.summaryAccordion = widget.NewAccordion(widget.NewAccordionItem("Summary", a.resultSummary))
 	a.app.Lifecycle().SetOnStopped(a.onStopped)
 
-	win.SetContent(
+	a.mainWindow.SetContent(
 		container.NewBorder(
 			container.NewVBox(
 				orderAccordion,
@@ -308,8 +307,8 @@ func (a *App) Run() {
 			nil,
 			a.resultTable,
 		))
-	win.Resize(fyne.NewSize(400, 600))
-	win.ShowAndRun()
+	a.mainWindow.Resize(fyne.NewSize(400, 600))
+	a.mainWindow.ShowAndRun()
 }
 
 func getSeparator() *canvas.LinearGradient {
@@ -427,15 +426,20 @@ func (a *App) calculateIngredients(order []Ingredient) (bill map[string]Ingredie
 }
 
 func (a *App) getBonusedMaterialAmount(itemType ItemType, value int) int {
-	var roomBonus, projectBonus float64
+	roomBonus := float64(1)
+	projectBonus := float64(1)
 	amount := float64(value)
 
 	if itemType == Item {
 		roomBonus = a.dormsBonus
-		projectBonus = a.craftMatBonus
+		if a.craftingEfficiency {
+			projectBonus = 1.2
+		}
 	} else {
 		roomBonus = a.underforgeBonus
-		projectBonus = a.smeltMatBonus
+		if a.smeltingEfficiency {
+			projectBonus = 1.2
+		}
 	}
 
 	basePrice := amount - (amount * (roomBonus - 1))

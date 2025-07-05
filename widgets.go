@@ -6,6 +6,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dustin/go-humanize"
@@ -40,15 +41,15 @@ func (o *Order) CreateRenderer() fyne.WidgetRenderer {
 	amount := widget.NewEntry()
 	amount.SetText("1")
 	o.amount = 1
+	amount.Validator = validation.NewRegexp("^[0-9]+$", "Whole numbers only please")
 	amount.OnChanged = func(s string) {
 		val, err := strconv.ParseInt(s, 10, 0)
-		if err != nil {
+		if err != nil || val == int64(0) {
 			o.amount = 1
-			amount.SetText("1")
 		}
 		o.amount = int(val)
 	}
-	amount.Resize(amount.MinSize())
+	amount.Resize(amount.MinSize().AddWidthHeight(11, 0))
 
 	decrement := widget.NewButtonWithIcon("", theme.MediaFastRewindIcon(), func() {
 		o.amount -= 1
@@ -69,7 +70,7 @@ func (o *Order) CreateRenderer() fyne.WidgetRenderer {
 	itemSelector := widget.NewSelect(o.options, func(input string) {
 		o.onItemChanged(input)
 	})
-	itemSelector.Resize(itemSelector.MinSize().AddWidthHeight(50, 0))
+	itemSelector.Resize(itemSelector.MinSize().AddWidthHeight(20, 0))
 
 	return &orderRenderer{
 		order:        o,
